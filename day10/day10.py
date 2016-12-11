@@ -241,9 +241,9 @@ value 2 goes to bot 2""".split("\n")
 def hook_up_bots(line, botnet):
     tokens = line.split(" ")
     assert tokens[3] == "low"
-    subject = tokens[0] + tokens[1]
-    low = tokens[5] + tokens[6]
-    high = tokens[-2] + tokens[-1]
+    subject = tokens[0] + " " + tokens[1]
+    low = tokens[5] + " " + tokens[6]
+    high = tokens[-2] + " " + tokens[-1]
     if "bot" in subject and subject in botnet.keys():
         raise Exception("ERROR")
     botnet[subject] = {'chips': []}
@@ -257,8 +257,8 @@ def hook_up_bots(line, botnet):
 
 def get_value_args(line):
     tokens = line.split(" ")
-    value = tokens[1]
-    subject = tokens[-2] + tokens[-1]
+    value = int(tokens[1])
+    subject = tokens[-2] + " " + tokens[-1]
     return value, subject
 
 
@@ -266,17 +266,14 @@ def activate_botnet(value, subject, botnet):
     botnet[subject]['chips'].append(value)
     if "output" in subject:
         return
+    #print(subject, botnet[subject])
     if len(botnet[subject]['chips']) == 2:
-        c1, c2 = botnet[subject]['chips']
-        if '61' in botnet[subject]['chips'] and '17' in botnet[subject]['chips']:
+        c1, c2 = sorted(botnet[subject]['chips'])
+        if 61 in botnet[subject]['chips'] and 17 in botnet[subject]['chips']:
             print(subject, "has", c1, c2)
         botnet[subject]['chips'] = []
-        if c1 > c2:
-            activate_botnet(c2, botnet[subject]['lowbot'], botnet)
-            activate_botnet(c1, botnet[subject]['highbot'], botnet)
-        else:
-            activate_botnet(c1, botnet[subject]['lowbot'], botnet)
-            activate_botnet(c2, botnet[subject]['highbot'], botnet)
+        activate_botnet(c1, botnet[subject]['lowbot'], botnet)
+        activate_botnet(c2, botnet[subject]['highbot'], botnet)
 
 
 def execute_instructions(data):
@@ -293,8 +290,10 @@ def execute_instructions(data):
 
 botnet = execute_instructions(example)
 
-assert botnet['output0']['chips'][0] == '5'
-assert botnet['output1']['chips'][0] == '2'
-assert botnet['output2']['chips'][0] == '3'
+assert botnet['output 0']['chips'][0] == 5
+assert botnet['output 1']['chips'][0] == 2
+assert botnet['output 2']['chips'][0] == 3
 
-execute_instructions(data)
+
+botnet = execute_instructions(data)
+print(botnet['output 0']['chips'][0] * botnet['output 1']['chips'][0] * botnet['output 2']['chips'][0])
